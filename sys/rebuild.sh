@@ -52,7 +52,7 @@ RebuildCapstone() {
 
 RebuildSdb() {
 	Rebuild shlr/sdb
-	Rebuild libr/db
+	Rebuild libr/util
 }
 
 RebuildBin() {

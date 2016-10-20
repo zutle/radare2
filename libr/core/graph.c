@@ -2392,11 +2392,15 @@ R_API void r_agraph_set_title (RAGraph *g, const char *title) {
 
 R_API RANode *r_agraph_add_node(const RAGraph *g, const char *title, const char *body) {
 	RANode *res = r_agraph_get_node (g, title);
-	if (res) return res;
+	if (res) {
+		return res;
+	}
 	res = R_NEW0 (RANode);
-	if (!res) return NULL;
-	res->title = title ? strdup(title) : strdup ("");
-	res->body = body ? strdup(body) : strdup ("");
+	if (!res) {
+		return NULL;
+	}
+	res->title = title ? strdup (title) : strdup ("");
+	res->body = body ? strdup (body) : strdup ("");
 	res->layer = -1;
 	res->pos_in_layer = -1;
 	res->is_dummy = false;
@@ -2407,12 +2411,12 @@ R_API RANode *r_agraph_add_node(const RAGraph *g, const char *title, const char 
 	if (res->title) {
 		char *s, *estr, *b;
 		size_t len;
-
 		sdb_array_add (g->db, "agraph.nodes", res->title, 0);
 		b = strdup (res->body);
 		len = strlen (b);
-		if (len>0 && b[len-1] == '\n')
+		if (len > 0 && b[len - 1] == '\n') {
 			b[len - 1] = '\0';
+		}
 		estr = sdb_encode ((const void *)b, -1);
 		s = sdb_fmt (1, "base64:%s", estr);
 		free (estr);

@@ -1,4 +1,4 @@
-/* sdb - MIT - Copyright 2013-2015 - pancake */
+/* sdb - MIT - Copyright 2013-2016 - pancake */
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -25,10 +25,14 @@ static inline int r_sys_mkdirp(char *dir) {
         const char slash = DIRSEP;
         char *path = dir;
 	char *ptr = path;
-        if (*ptr==slash) ptr++;
+        if (*ptr == slash) {
+		ptr++;
+	}
 #if __WINDOWS__
         char *p = strstr (ptr, ":\\");
-        if (p) ptr = p + 2;
+        if (p) {
+		ptr = p + 2;
+	}
 #endif
         while ((ptr = strchr (ptr, slash))) {
                 *ptr = 0;
@@ -43,44 +47,53 @@ static inline int r_sys_mkdirp(char *dir) {
         return ret;
 }
 
-SDB_API int sdb_disk_create (Sdb* s) {
+SDB_API bool sdb_disk_create (Sdb* s) {
 	int nlen;
 	char *str;
-	if (!s || !s->dir || s->fdump >= 0) {
-		return 0; // cannot re-create
+	const char *dir;
+	if (!s || s->fdump >= 0) {
+		return false; // cannot re-create
 	}
+	if (!s->dir && s->name) {
+		s->dir = strdup (s->name);
+	}
+	dir = s->dir ? s->dir : "./";
 	free (s->ndump);
 	s->ndump = NULL;
-	nlen = strlen (s->dir);
-	str = malloc (nlen+5);
+	nlen = strlen (dir);
+	str = malloc (nlen + 5);
 	if (!str) {
-		return 0;
+		return false;
 	}
-	memcpy (str, s->dir, nlen + 1);
+	memcpy (str, dir, nlen + 1);
 	r_sys_mkdirp (str);
 	memcpy (str + nlen, ".tmp", 5);
-	close (s->fdump);
-	s->fdump = open (str, O_BINARY|O_RDWR|O_CREAT|O_TRUNC, SDB_MODE);
+	if (s->fdump != -1) {
+		close (s->fdump);
+	}
+	s->fdump = open (str, O_BINARY | O_RDWR | O_CREAT | O_TRUNC, SDB_MODE);
 	if (s->fdump == -1) {
 		eprintf ("sdb: Cannot open '%s' for writing.\n", str);
 		free (str);
-		return 0;
+		return false;
 	}
 	cdb_make_start (&s->m, s->fdump);
 	s->ndump = str;
-	return 1;
+	return true;
 }
 
 SDB_API int sdb_disk_insert(Sdb* s, const char *key, const char *val) {
 	struct cdb_make *c = &s->m;
-	if (!key || !val) return 0;
+	if (!key || !val) {
+		return 0;
+	}
 	//if (!*val) return 0; //undefine variable if no value
-	return cdb_make_add (c, key, strlen (key)+1, val, strlen (val)+1);
+	return cdb_make_add (c, key, strlen (key), val, strlen (val));
 }
 
-#define IFRET(x) if(x)ret=0
-SDB_API int sdb_disk_finish (Sdb* s) {
-	int reopen = 0, ret = 1;
+#define IFRET(x) if (x) ret = 0
+SDB_API bool sdb_disk_finish (Sdb* s) {
+	int reopen = 0, ret = true;
 	IFRET (!cdb_make_finish (&s->m));
 #if USE_MMAN
 	IFRET (fsync (s->fdump));
@@ -98,7 +111,9 @@ SDB_API int sdb_disk_finish (Sdb* s) {
 		//eprintf ("Error 0x%02x\n", GetLastError ());
 	}
 #else
-	IFRET (rename (s->ndump, s->dir));
+	if (s->ndump && s->dir) {
+		IFRET (rename (s->ndump, s->dir));
+	}
 #endif
 	free (s->ndump);
 	s->ndump = NULL;
@@ -106,8 +121,8 @@ SDB_API int sdb_disk_finish (Sdb* s) {
 	reopen = 1; // always reopen if possible
 	if (reopen) {
 		int rr = sdb_open (s, s->dir);
-		if (ret && rr<0) {
-			ret = 0;
+		if (ret && rr < 0) {
+			ret = false;
 		}
 		cdb_init (&s->db, s->fd);
 	}

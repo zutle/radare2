@@ -203,7 +203,7 @@ R_API void r_anal_xrefs_list(RAnal *anal, int rad) {
 		bool is_first = true;
 		SdbListIter *sdb_iter;
 		SdbKv *kv;
-		SdbList *sdb_list = sdb_foreach_list (DB);
+		SdbList *sdb_list = sdb_foreach_list (DB, false);
 		ls_foreach (sdb_list, sdb_iter, kv) {
 			is_first = xrefs_list_cb_json (anal, is_first, kv->key, kv->value);
 		}
