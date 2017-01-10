@@ -18,7 +18,10 @@
 static int r_debug_native_continue (RDebug *dbg, int pid, int tid, int sig);
 static int r_debug_native_reg_read (RDebug *dbg, int type, ut8 *buf, int size);
 static int r_debug_native_reg_write (RDebug *dbg, int type, const ut8* buf, int size);
+
+#if !(__WINDOWS__ && !__CYGWIN__)
 static void r_debug_native_stop(RDebug *dbg);
+#endif
 
 #include "native/bt.c"
 
@@ -218,11 +221,13 @@ static int r_debug_native_continue_syscall (RDebug *dbg, int pid, int num) {
 #endif
 }
 
+#if !(__WINDOWS__ && !__CYGWIN__)
 /* Callback to trigger SIGINT signal */
 static void r_debug_native_stop(RDebug *dbg) {
 	r_debug_kill (dbg, dbg->pid, dbg->tid, SIGINT);
 	r_cons_break_pop ();
 }
+#endif
 
 /* TODO: specify thread? */
 /* TODO: must return true/false */
@@ -295,7 +300,9 @@ static bool tracelib(RDebug *dbg, const char *mode, PLIB_ITEM item) {
  * Returns R_DEBUG_REASON_*
  */
 static RDebugReasonType r_debug_native_wait (RDebug *dbg, int pid) {
+#if !(__WINDOWS__ && !__CYGWIN__)
 	int status = -1;
+#endif
 	RDebugReasonType reason = R_DEBUG_REASON_UNKNOWN;
 
 #if __WINDOWS__ && !__CYGWIN__
