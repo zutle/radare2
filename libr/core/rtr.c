@@ -991,13 +991,17 @@ R_API void r_core_rtr_add(RCore *core, const char *_input) {
 	}
 
 	if (!(file = strchr (ptr, '/'))) {
-		eprintf ("Error: Missing '/'\n");
-		return;
+		eprintf ("Connecting without opening a file\n");
+	} else {
+		*file++ = 0;
 	}
-	*file++ = 0;
+
 	port = r_str_chop (port);
-	while (*file == ' ') {
-		file++;
+
+	if (file) {
+		while (*file == ' ') {
+			file++;
+		}
 	}
 	if (r_sandbox_enable (0)) {
 		eprintf ("sandbox: connect disabled\n");
@@ -1013,9 +1017,16 @@ R_API void r_core_rtr_add(RCore *core, const char *_input) {
 	case RTR_PROT_HTTP:
 		{
 			char prompt[64], prompt2[64], *str, *ptr;
-			int len, flen = strlen (file);
+			int len, flen;;
 			bool is_valid, is_visual;
 			const char* res;
+
+			if (!file) {
+				eprintf ("Error: Missing '/'\n");
+				return;
+			}
+
+			flen = strlen (file);
 
 			is_visual = (file[flen - 1] == 'V');
 			is_valid = (file[flen - (is_visual? 2: 1)] == '/');
@@ -1106,23 +1117,28 @@ R_API void r_core_rtr_add(RCore *core, const char *_input) {
 			return;
 		}
 		eprintf ("Connected to %s at port %s\n", host, port);
-		/* send */
-		buf[0] = RTR_RAP_OPEN;
-		buf[1] = 0;
-		buf[2] = (ut8)(strlen (file) + 1);
-		memcpy (buf + 3, file, buf[2]);
-		r_socket_write (fd, buf, 3 + buf[2]);
-		/* read */
-		eprintf ("waiting... ");
-		fflush (stdout);
-		r_socket_read (fd, (ut8*)buf, 5);
-		i = r_read_at_be32 (buf, 1);
-		if (buf[0] != (char)(RTR_RAP_OPEN | RTR_RAP_REPLY) || i <= 0) {
-			eprintf ("Error: Wrong reply\n");
-			r_socket_free (fd);
-			return;
+
+		if (file) {
+			/* send */
+			buf[0] = RTR_RAP_OPEN;
+			buf[1] = 0;
+			buf[2] = (ut8)(strlen (file) + 1);
+			memcpy (buf + 3, file, buf[2]);
+			r_socket_write (fd, buf, 3 + buf[2]);
+			/* read */
+			eprintf ("waiting... ");
+			fflush (stdout);
+			r_socket_read (fd, (ut8*)buf, 5);
+			i = r_read_at_be32 (buf, 1);
+			if (buf[0] != (char)(RTR_RAP_OPEN | RTR_RAP_REPLY) || i <= 0) {
+				eprintf ("Error: Wrong reply\n");
+				r_socket_free (fd);
+				return;
+			}
+			eprintf ("ok\n");
 		}
-		eprintf ("ok\n");
+
+
 		break;
 	case RTR_PROT_TCP:
 		if (!r_socket_connect_tcp (fd, host, port, timeout)) { //TODO: Use rap.ssl
@@ -1153,7 +1169,13 @@ R_API void r_core_rtr_add(RCore *core, const char *_input) {
 		rtr_host[i].proto = proto;
 		strncpy (rtr_host[i].host, host, sizeof (rtr_host[i].proto)-1);
 		rtr_host[i].port = r_num_get (core->num, port);
-		strncpy (rtr_host[i].file, file, sizeof (rtr_host[i].file)-1);
+
+		if (file) {
+			strncpy (rtr_host[i].file, file, sizeof (rtr_host[i].file)-1);
+		} else {
+			// what is rtr_hosts[i].file used for?  might want to get the file name :)
+			strncpy (rtr_host[i].file, "unspecified", sizeof (rtr_host[i].file)-1);
+		}
 		rtr_host[i].fd = fd;
 		rtr_n = i;
 		break;
