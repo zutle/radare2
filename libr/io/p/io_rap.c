@@ -106,6 +106,9 @@ static ut64 rap__lseek(RIO *io, RIODesc *fd, ut64 offset, int whence) {
 	RSocket *s = RIORAP_FD (fd);
 	ut8 tmp[10];
 	int ret;
+
+	eprintf ("[lars] rap__lseek to: 0x%I64x\n", offset);
+
 	// query
 	tmp[0] = RMT_SEEK;
 	tmp[1] = (ut8)whence;
@@ -137,6 +140,8 @@ static RIODesc *rap__open(RIO *io, const char *pathname, int rw, int mode) {
 	RSocket *rap_fd;
 	char buf[1024];
 	RIORap *rior;
+
+	eprintf ("[lars] rap__open\n");
 
 	if (!rap__plugin_open (io, pathname, 0)) {
 		return NULL;
@@ -202,7 +207,7 @@ static RIODesc *rap__open(RIO *io, const char *pathname, int rw, int mode) {
 		r_socket_free (rap_fd);
 		return NULL;
 	}
-	eprintf ("Connected to: %s at port %s\n", ptr, port);
+	eprintf ("[lars] Connected to: %s at port %s\n", ptr, port);
 	rior = R_NEW0 (RIORap);
 	rior->listener = false;
 	rior->client = rior->fd = rap_fd;
@@ -248,6 +253,9 @@ static RIODesc *rap__open(RIO *io, const char *pathname, int rw, int mode) {
 	//	free (rior);
 		//return NULL;
 	}
+
+	eprintf ("[lars] return r_io_desc_new\n");
+
 	//r_socket_free (rap_fd);
 	return r_io_desc_new (&r_io_plugin_rap, rior->fd->fd,
 		pathname, rw, mode, rior);

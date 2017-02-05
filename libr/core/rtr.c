@@ -1131,7 +1131,7 @@ R_API void r_core_rtr_add(RCore *core, const char *_input) {
 			r_socket_read (fd, (ut8*)buf, 5);
 			i = r_read_at_be32 (buf, 1);
 			if (buf[0] != (char)(RTR_RAP_OPEN | RTR_RAP_REPLY) || i <= 0) {
-				eprintf ("Error: Wrong reply\n");
+				eprintf ("Error: Wrong reply (file open)\n");
 				r_socket_free (fd);
 				return;
 			}
@@ -1284,6 +1284,8 @@ R_API void r_core_rtr_cmd(RCore *core, const char *input) {
 	unsigned int cmd_len;
 	int i, fd = atoi (input);
 
+	eprintf ("command is: %s\n", input);
+
 	// "=:"
 	if (*input == ':' && !strchr (input + 1, ':')) {
 		r_core_rtr_rap_run (core, input);
@@ -1366,7 +1368,7 @@ R_API void r_core_rtr_cmd(RCore *core, const char *input) {
 	}
 
 	if (bufr[0] != (char)(RAP_RMT_CMD | RTR_RAP_REPLY)) {
-		eprintf ("Error: Wrong reply\n");
+		eprintf ("Error: Wrong reply (cmd)\n");
 		return;
 	}
 	cmd_len = r_read_at_be32 (bufr, 1);
