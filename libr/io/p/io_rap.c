@@ -107,7 +107,7 @@ static ut64 rap__lseek(RIO *io, RIODesc *fd, ut64 offset, int whence) {
 	ut8 tmp[10];
 	int ret;
 
-	eprintf ("[lars] rap__lseek to: 0x%I64x\n", offset);
+	eprintf ("[lars] rap__lseek to: %08"PFMT64x"\n", offset);
 
 	// query
 	tmp[0] = RMT_SEEK;
@@ -141,7 +141,7 @@ static RIODesc *rap__open(RIO *io, const char *pathname, int rw, int mode) {
 	char buf[1024];
 	RIORap *rior;
 
-	eprintf ("[lars] rap__open\n");
+	eprintf ("[lars] rap__open: %s\n", pathname);
 
 	if (!rap__plugin_open (io, pathname, 0)) {
 		return NULL;

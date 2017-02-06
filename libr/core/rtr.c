@@ -991,7 +991,7 @@ R_API void r_core_rtr_add(RCore *core, const char *_input) {
 	}
 
 	if (!(file = strchr (ptr, '/'))) {
-		eprintf ("Connecting without opening a file\n");
+		eprintf ("[lars] Connecting without opening a file\n");
 	} else {
 		*file++ = 0;
 	}
@@ -1116,7 +1116,7 @@ R_API void r_core_rtr_add(RCore *core, const char *_input) {
 			r_socket_free (fd);
 			return;
 		}
-		eprintf ("Connected to %s at port %s\n", host, port);
+		eprintf ("[lars] Connected to %s at port %s\n", host, port);
 
 		if (file) {
 			/* send */
@@ -1136,8 +1136,9 @@ R_API void r_core_rtr_add(RCore *core, const char *_input) {
 				return;
 			}
 			eprintf ("ok\n");
+		} else {
+			eprintf ("[lars] connected without opening a file\n");
 		}
-
 
 		break;
 	case RTR_PROT_TCP:
@@ -1284,7 +1285,7 @@ R_API void r_core_rtr_cmd(RCore *core, const char *input) {
 	unsigned int cmd_len;
 	int i, fd = atoi (input);
 
-	eprintf ("command is: %s\n", input);
+	eprintf ("[lars] command is: %s\n", input);
 
 	// "=:"
 	if (*input == ':' && !strchr (input + 1, ':')) {
