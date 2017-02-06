@@ -2018,6 +2018,8 @@ reaccept:
 			}
 			switch ((ut8)cmd) {
 			case RMT_OPEN:
+				eprintf ("[lars] RMT_OPEN (core.c)\n");
+
 				r_socket_read_block (c, &flg, 1); // flags
 				eprintf ("open (%d): ", cmd);
 				r_socket_read_block (c, &cmd, 1); // len
