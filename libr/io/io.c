@@ -795,6 +795,9 @@ R_API ut64 r_io_seek(RIO *io, ut64 offset, int whence) {
 	// now, io-seek always works with vaddr, because it depends on read/write ops that use it
 	int posix_whence = SEEK_SET;
 	ut64 ret = UT64_MAX;
+
+	eprintf ("[lars] r_io_seek to: %08"PFMT64x"\n", offset);
+
 	if (!io) {
 		return ret;
 	}
