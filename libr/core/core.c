@@ -2022,7 +2022,9 @@ reaccept:
 
 				r_socket_read_block (c, &flg, 1); // flags
 				eprintf ("open (%d): ", cmd);
+				eprintf ("flag (0x%x): ", flg)
 				r_socket_read_block (c, &cmd, 1); // len
+				eprintf ("len (0x%x): ", cmd);
 				pipefd = -1;
 				ptr = malloc (cmd + 1);
 				//XXX cmd is ut8..so <256 if (cmd<RMT_MAX)
@@ -2037,6 +2039,9 @@ reaccept:
 					if (flg & R_IO_WRITE) {
 						perm |= R_IO_WRITE;
 					}
+
+					// Get the already opened file instead of opening it again..
+
 					file = r_core_file_open (core, (const char *)ptr, perm, 0);
 					if (file) {
 						r_core_bin_load (core, NULL, baddr);
