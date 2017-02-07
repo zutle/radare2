@@ -2022,7 +2022,7 @@ reaccept:
 
 				r_socket_read_block (c, &flg, 1); // flags
 				eprintf ("open (%d): ", cmd);
-				eprintf ("flag (0x%x): ", flg)
+				eprintf ("flag (0x%x): ", flg);
 				r_socket_read_block (c, &cmd, 1); // len
 				eprintf ("len (0x%x): ", cmd);
 				pipefd = -1;
