@@ -1137,7 +1137,7 @@ R_API void r_core_rtr_add(RCore *core, const char *_input) {
 			}
 			eprintf ("ok\n");
 		} else {
-			eprintf ("[lars] connected without opening a file\n");
+			eprintf ("[lars] RTR_PROT_RAP: no file specified\n");
 		}
 
 		break;

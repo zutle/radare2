@@ -2024,41 +2024,59 @@ reaccept:
 				eprintf ("open (%d): ", cmd);
 				eprintf ("flag (0x%x): ", flg);
 				r_socket_read_block (c, &cmd, 1); // len
-				eprintf ("len (0x%x): ", cmd);
+				eprintf ("len (0x%x)\n", cmd);
 				pipefd = -1;
-				ptr = malloc (cmd + 1);
-				//XXX cmd is ut8..so <256 if (cmd<RMT_MAX)
-				if (!ptr) {
-					eprintf ("Cannot malloc in rmt-open len = %d\n", cmd);
-				} else {
+
+				if (!cmd)
+				{
+					// Get the already opened file instead of opening a new one
 					RCoreFile *file;
-					ut64 baddr = r_config_get_i (core->config, "bin.laddr");
-					r_socket_read_block (c, ptr, cmd); //filename
-					ptr[cmd] = 0;
-					ut32 perm = R_IO_READ;
-					if (flg & R_IO_WRITE) {
-						perm |= R_IO_WRITE;
-					}
+					//ut32 perm; // set write access if not already specified?
 
-					// Get the already opened file instead of opening it again..
-
-					file = r_core_file_open (core, (const char *)ptr, perm, 0);
+					file = r_core_file_cur (core);
 					if (file) {
-						r_core_bin_load (core, NULL, baddr);
-						file->map = r_io_map_add (core->io, file->desc->fd,
-								perm, 0, 0, r_io_desc_size (core->io, file->desc));
-						if (core->file && core->file->desc) {
-							pipefd = core->file->desc->fd;
-						} else {
-							pipefd = -1;
-						}
-						eprintf ("(flags: %d) len: %d filename: '%s'\n",
-							flg, cmd, ptr); //config.file);
+						eprintf ("[lars] current file opened\n");
+						eprintf ("[lars] (unset) core->file: 0x%x\n", core->file);
+						eprintf ("[lars] (unset) core->file->desc->fd: 0x%x\n", core->file->desc->fd);
+
 					} else {
 						pipefd = -1;
-						eprintf ("Cannot open file (%s)\n", ptr);
+						eprintf ("Could not retrieve current file\n");
 						r_socket_close (c);
-						goto out_of_function; //XXX: Close conection and goto accept
+						goto out_of_function;
+					}
+				} else {
+					ptr = malloc (cmd + 1);
+					//XXX cmd is ut8..so <256 if (cmd<RMT_MAX)
+					if (!ptr) {
+						eprintf ("Cannot malloc in rmt-open len = %d\n", cmd);
+					} else {
+						RCoreFile *file;
+						ut64 baddr = r_config_get_i (core->config, "bin.laddr");
+						r_socket_read_block (c, ptr, cmd); //filename
+						ptr[cmd] = 0;
+						ut32 perm = R_IO_READ;
+						if (flg & R_IO_WRITE) {
+							perm |= R_IO_WRITE;
+						}
+						file = r_core_file_open (core, (const char *)ptr, perm, 0);
+						if (file) {
+							r_core_bin_load (core, NULL, baddr);
+							file->map = r_io_map_add (core->io, file->desc->fd,
+													  perm, 0, 0, r_io_desc_size (core->io, file->desc));
+							if (core->file && core->file->desc) {
+								pipefd = core->file->desc->fd;
+							} else {
+								pipefd = -1;
+							}
+							eprintf ("(flags: %d) len: %d filename: '%s'\n",
+									 flg, cmd, ptr); //config.file);
+						} else {
+							pipefd = -1;
+							eprintf ("Cannot open file (%s)\n", ptr);
+							r_socket_close (c);
+							goto out_of_function; //XXX: Close conection and goto accept
+						}
 					}
 				}
 				buf[0] = RMT_OPEN | RMT_REPLY;

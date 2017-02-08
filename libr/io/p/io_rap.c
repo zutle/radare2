@@ -256,6 +256,32 @@ static RIODesc *rap__open(RIO *io, const char *pathname, int rw, int mode) {
 	} else {
 		eprintf ("[lars] No file specified\n");
 
+		buf[0] = RMT_OPEN;
+		buf[1] = rw; // not really an option when using existing file? or maybe :)
+		buf[2] = 0;
+		r_socket_write (rap_fd, buf, 3);
+		r_socket_flush (rap_fd);
+
+		eprintf ("[lars] Waiting for reply on RMT_OPEN (no file)\n");
+		buf[0] = 0;
+		r_socket_read_block (rap_fd, (ut8*)buf, 5); // size is 5?
+		if (buf[0] != (char)(RMT_OPEN | RMT_REPLY)) {
+			eprintf ("[lars] rap: Expecting OPEN|REPLY packet. got: %02x\n", buf[0]);
+			r_socket_free (rap_fd);
+			free (rior);
+			return NULL;
+		} else {
+			eprintf ("[lars] got OPEN|REPLY\n", buf[0]);
+		}
+
+		i = r_read_at_be32 (buf, 1);
+		if (i > 0) {
+			eprintf ("[lars] ok (i > 0)\n");
+		} else {
+			eprintf ("[lars] i is: %d\n", i);
+		}
+
+
 	//	r_socket_free (rap_fd);
 	//	free (rior);
 		//return NULL;
