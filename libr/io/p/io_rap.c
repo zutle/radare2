@@ -264,7 +264,7 @@ static RIODesc *rap__open(RIO *io, const char *pathname, int rw, int mode) {
 
 		eprintf ("[lars] Waiting for reply on RMT_OPEN (no file)\n");
 		buf[0] = 0;
-		r_socket_read_block (rap_fd, (ut8*)buf, 5); // size is 5?
+		r_socket_read_block (rap_fd, (ut8*)buf, 5);
 		if (buf[0] != (char)(RMT_OPEN | RMT_REPLY)) {
 			eprintf ("[lars] rap: Expecting OPEN|REPLY packet. got: %02x\n", buf[0]);
 			r_socket_free (rap_fd);
@@ -274,12 +274,14 @@ static RIODesc *rap__open(RIO *io, const char *pathname, int rw, int mode) {
 			eprintf ("[lars] got OPEN|REPLY\n", buf[0]);
 		}
 
+		// Read fd
 		i = r_read_at_be32 (buf, 1);
 		if (i > 0) {
 			eprintf ("[lars] ok (i > 0)\n");
 		} else {
 			eprintf ("[lars] i is: %d\n", i);
 		}
+
 
 
 	//	r_socket_free (rap_fd);

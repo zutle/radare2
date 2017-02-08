@@ -2087,6 +2087,8 @@ reaccept:
 				ptr = NULL;
 				break;
 			case RMT_READ:
+				eprintf ("[lars] RMT_READ (core.c)\n");
+
 				r_socket_read_block (c, (ut8*)&buf, 4);
 				i = r_read_be32 (buf);
 				ptr = (ut8 *)malloc (i + core->blocksize + 5);
