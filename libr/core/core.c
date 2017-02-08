@@ -2035,10 +2035,10 @@ reaccept:
 
 					file = r_core_file_cur (core);
 					if (file) {
+						pipefd = file->desc->fd;
 						eprintf ("[lars] current file opened\n");
-						eprintf ("[lars] (unset) core->file: 0x%x\n", core->file);
-						eprintf ("[lars] (unset) core->file->desc->fd: 0x%x\n", core->file->desc->fd);
-
+//						eprintf ("[lars] (unset) core->file: 0x%x\n", core->file);
+//						eprintf ("[lars] (unset) core->file->desc->fd: 0x%x\n", core->file->desc->fd);
 					} else {
 						pipefd = -1;
 						eprintf ("Could not retrieve current file\n");
