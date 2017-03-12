@@ -22,6 +22,7 @@ IO_OBJS +=
     p/io_w32dbg.c
     p/io_zip.c
     p/io_bochs.c
+    p/io_qshm.c
 ;
 
 IO_EXTRA +=
